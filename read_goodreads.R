@@ -25,10 +25,6 @@ books <- books %>% select(c("Id","Name","RatingDist1","RatingDist2",
                             "RatingDist3","RatingDist4","RatingDist5","RatingDistTotal",
                             "PublishYear","Language","Authors","Rating") )
 
-#books_2 <- read.csv(paste0(DATA_DIR,"/",book_files[2]),stringsAsFactors = F)  # Read the first file
-#books_3 <- read.csv(paste0(DATA_DIR,"/",book_files[3]),stringsAsFactors = F)  # Read the first file
-#books_4 <- read.csv(paste0(DATA_DIR,"/",book_files[4]),stringsAsFactors = F)  # Read the first file
-
 for(file in book_files[2:length(book_files)]){
   bookfile <- read.csv(paste0(DATA_DIR,"/",file),stringsAsFactors = F)  
   bookfile <- bookfile %>% select(c("Id","Name","RatingDist1","RatingDist2",
