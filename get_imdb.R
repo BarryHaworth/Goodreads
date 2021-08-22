@@ -8,8 +8,8 @@ DATA_DIR    <- paste0(PROJECT_DIR,"/data")
 FILE_DIR    <- paste0(DATA_DIR,"/tsv")
 
 get_title <- function(file){
-  local_file <- paste0(FILE_DIR,"/title.",file,".tsv.gz")
-  remote_file <- paste0("https://datasets.imdbws.com/title.",file,".tsv.gz")
+  local_file <- paste0(FILE_DIR,"/",file,".tsv.gz")
+  remote_file <- paste0("https://datasets.imdbws.com/",file,".tsv.gz")
   if (!file.exists(local_file) |
       as.Date(file.info(local_file)$mtime) != Sys.Date()){
     print(paste("Downloading Remote File:",remote_file,"to Local file:",local_file))
@@ -19,9 +19,19 @@ get_title <- function(file){
   }
 }
 
-get_title("basics")
-get_title("crew")
-get_title("principals")
+# Download the files
+get_title("name.basics")
+get_title("title.akas")
+get_title("title.basics")
+get_title("title.crew")
+get_title("title.principals")
+get_title("title.ratings")
+
+# Names
+names  <- read.delim(paste0(FILE_DIR,"/name.basics.tsv.gz") ,stringsAsFactors = FALSE)
+head(names)
+summary(names)
+save(names,file=paste0(DATA_DIR,"/names.RData"))  # Save names data frame
 
 # Principals
 principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAsFactors = FALSE)
@@ -51,3 +61,9 @@ basics$startYear <- as.numeric(basics$startYear)
 basics$endYear   <- as.numeric(basics$endYear)
 basics$runtimeMinutes <- as.numeric(basics$runtimeMinutes)
 save(basics,file=paste0(DATA_DIR,"/basics.RData"))
+
+# Ratings
+ratings <- read.delim(paste0(FILE_DIR,"/title.ratings.tsv.gz") ,stringsAsFactors = FALSE)
+save(ratings,file=paste0(DATA_DIR,"/ratings.RData"))
+
+
