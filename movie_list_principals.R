@@ -1,9 +1,13 @@
 # Read the IMDB data and derive a list of movies based on books
 
-# This version uses the Crew data set.
-# Disadvantage is that writers can be identified, but it
-# returns a list of all writes (script writers, book writers)
-# and has no way to identify those movies based on a book
+# Tried to identify movies based on a book by looking at the 
+# principals data set.  This has movie ID and person id (name)
+# along with their category (writer) and their job
+# (writer of novel/comic/manga etc)
+# Problem is, the principals data set does not cover all the 
+# movies - when I look for one of the Harry Potter movies
+# it does not exist in that data set.
+# SO - abandon this approach
 
 library(dplyr)
 library(rmutil)
@@ -12,23 +16,27 @@ PROJECT_DIR <- "c:/R/Goodreads"
 DATA_DIR    <- paste0(PROJECT_DIR,"/data")
 
 # Read the data
+load(file=paste0(DATA_DIR,"/principals.RData"))
 load(file=paste0(DATA_DIR,"/crew.RData"))
 load(file=paste0(DATA_DIR,"/basics.RData"))
 load(file=paste0(DATA_DIR,"/names.RData"))
 load(file=paste0(DATA_DIR,"/ratings.RData"))
 
 # Harry Potter where are you
+principals %>% filter(tconst=="tt0304141")
 crew       %>% filter(tconst=="tt0304141")
 basics     %>% filter(tconst=="tt0304141")
 names      %>% filter(nconst=="nm0746830")
 ratings    %>% filter(tconst=="tt0304141")
 
 
-# Identify writers of a movie
-head(crew)
+# Identify writers who are the writers of the novel the movie was based on.
+head(principals)
+principals %>% filter(tconst=="tt0304141")  # Harry Potter Check
+#head(crew)
 
 # Writer IDs
-head(crew %>% filter(writers != "\\N"),20) # For each movie, can list the writers.
+#head(crew %>% filter(writers != "\\N"),20) # For each movie, can list the writers.
 
 # Identify writers from Principals
 summary(principals$category)  # All Categories
