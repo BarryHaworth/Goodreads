@@ -13,6 +13,7 @@
 
 library(dplyr)
 library(rmutil)
+library(tidyr)
 
 PROJECT_DIR <- "c:/R/Goodreads"
 DATA_DIR    <- paste0(PROJECT_DIR,"/data")
@@ -48,6 +49,7 @@ writers <- writers %>%
 
 head(writers)
 writers     %>% filter(tconst=="tt0304141")
+writers     %>% filter(tconst=="tt0120855")
 
 save(writers,file=paste0(DATA_DIR,"/writers.RData"))
 
@@ -70,3 +72,5 @@ crew       %>% filter(tconst=="tt0304141")
 basics     %>% filter(tconst=="tt0304141")
 writers    %>% filter(tconst=="tt0304141")
 movie_list %>% filter(tconst=="tt0304141")
+
+movie_list    %>% filter(tconst=="tt0120855") # Disney Tarzan
