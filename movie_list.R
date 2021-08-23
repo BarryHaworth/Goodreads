@@ -60,7 +60,8 @@ movie_list <- writers %>%
   left_join(names %>% select(nconst,primaryName),by="nconst") %>% 
   rename(writer = primaryName) %>%
   left_join(ratings,by="tconst") %>% 
-  rename(movie_rating=averageRating,movie_votes=numVotes)
+  rename(movie_rating=averageRating,movie_votes=numVotes) %>%
+  filter(movie_votes >= 100)
 
 head(movie_list)
 
