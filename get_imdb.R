@@ -54,7 +54,7 @@ ratings <- read.delim(paste0(FILE_DIR,"/title.ratings.tsv.gz") ,stringsAsFactors
 ratings <- ratings %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 save(ratings,file=paste0(DATA_DIR,"/ratings.RData"))
 
-# Names (Can't filter names)
+# Names (Can't filter names as they don't have tconst)
 names  <- read.delim(paste0(FILE_DIR,"/name.basics.tsv.gz") ,stringsAsFactors = FALSE)
 head(names)
 summary(names)
@@ -66,12 +66,13 @@ principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAs
 principals <- principals %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 principals$category <- as.factor(principals$category)
 summary(principals$category)
-principals$job <- as.factor(principals$job)
-summary(principals$job)
+# principals$job <- as.factor(principals$job)
+# summary(principals$job)
 save(principals,file=paste0(DATA_DIR,"/principals.RData"))  # Save Principals data frame
 
 # Crew
 crew  <- read.delim(paste0(FILE_DIR,"/title.crew.tsv.gz") ,stringsAsFactors = FALSE)
+crew  <- crew %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 save(crew,file=paste0(DATA_DIR,"/crew.RData"))   # Save Crew Data Frame
 
 
