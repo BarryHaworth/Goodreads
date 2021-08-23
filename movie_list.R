@@ -4,6 +4,13 @@
 # Disadvantage is that writers can be identified, but it
 # returns a list of all writes (script writers, book writers)
 # and has no way to identify those movies based on a book
+# Need to split crew table when there are multiple writers listsed 
+# Tried splitting methods from this page:
+# https://stackoverflow.com/questions/13773770/split-comma-separated-strings-in-a-column-into-separate-rows
+# Turns out: it takes time.
+# I tried the best method listed there (the jaap_DT2 method) but couldn't get it to work easily,
+# so reverted to the str_split method
+
 
 library(dplyr)
 library(rmutil)
@@ -17,50 +24,47 @@ load(file=paste0(DATA_DIR,"/basics.RData"))
 load(file=paste0(DATA_DIR,"/names.RData"))
 load(file=paste0(DATA_DIR,"/ratings.RData"))
 
-# Harry Potter where are you
+# Harry Potter where are you?
 crew       %>% filter(tconst=="tt0304141")
 basics     %>% filter(tconst=="tt0304141")
 names      %>% filter(nconst=="nm0746830")
 ratings    %>% filter(tconst=="tt0304141")
 
-
 # Identify writers of a movie
 head(crew)
 
 # Writer IDs
-head(crew %>% filter(writers != "\\N"),20) # For each movie, can list the writers.
+writers <- crew %>% 
+  filter(writers != "\\N") %>% 
+  select(-directors) 
 
-# Identify writers from Principals
-summary(principals$category)  # All Categories
-summary(principals$job)       # All Jobs
+# For testing:
+writers_test <- head(writers,1000)
 
-writers <- principals %>% filter(category == "writer") %>% select(-c(characters,ordering))
+# This method is very slow but it works.
+# writers <- writers_test %>%
+writers <- writers %>%
+  separate_rows(writers)  %>%
+  rename(nconst=writers)
 
-summary(writers$job)
-
-booktypes <- c("novel","manga","book","based on the novel by","comic","short story",
-              "based on the book by"," based upon short stories by","novels")
-
-book_writers <- writers %>% filter(job %in% booktypes)
-book_writers$job <- factor(book_writers$job)  # Redefine the factor to remove unused levels
-summary(book_writers$job)
+head(writers)
+writers     %>% filter(tconst=="tt0304141")
 
 # Movies Based on a Book
-based_on_a_book <- book_writers %>% 
-                   left_join(basics %>% select(tconst,primaryTitle,originalTitle),by="tconst") %>%
-                   left_join(names %>% select(nconst,primaryName),by="nconst") %>% 
-                   rename(writer = primaryName) %>%
-                   left_join(ratings,by="tconst") %>% 
-                   rename(movie_rating=averageRating,movie_votes=numVotes)
-  
-head(based_on_a_book)
+movie_list <- writers %>% 
+  left_join(basics %>% select(tconst,primaryTitle,originalTitle),by="tconst") %>%
+  left_join(names %>% select(nconst,primaryName),by="nconst") %>% 
+  rename(writer = primaryName) %>%
+  left_join(ratings,by="tconst") %>% 
+  rename(movie_rating=averageRating,movie_votes=numVotes)
 
-save(based_on_a_book,file=paste0(DATA_DIR,"/based_on_a_book.RData"))
+head(movie_list)
+
+save(movie_list,file=paste0(DATA_DIR,"/movie_list.RData"))
 
 # Checking.  What happened to Harry Potter?
 
-basics     %>% filter(tconst=="tt0304141")
-principals %>% filter(tconst=="tt0304141")
-writers    %>% filter(tconst=="tt0304141")
-book_writers %>% filter(tconst=="tt0304141")
 crew       %>% filter(tconst=="tt0304141")
+basics     %>% filter(tconst=="tt0304141")
+writers    %>% filter(tconst=="tt0304141")
+movie_list %>% filter(tconst=="tt0304141")
