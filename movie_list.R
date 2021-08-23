@@ -11,7 +11,6 @@
 # I tried the best method listed there (the jaap_DT2 method) but couldn't get it to work easily,
 # so reverted to the str_split method
 
-
 library(dplyr)
 library(rmutil)
 
@@ -50,7 +49,10 @@ writers <- writers %>%
 head(writers)
 writers     %>% filter(tconst=="tt0304141")
 
-# Movies Based on a Book
+save(writers,file=paste0(DATA_DIR,"/writers.RData"))
+
+# This next step does not work - cannot allocate enough space
+# Combined movie data
 movie_list <- writers %>% 
   left_join(basics %>% select(tconst,primaryTitle,originalTitle),by="tconst") %>%
   left_join(names %>% select(nconst,primaryName),by="nconst") %>% 
