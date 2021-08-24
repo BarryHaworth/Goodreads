@@ -54,7 +54,6 @@ if (!exists("movie_keywords")) {
 # Get the list of IDs looked up
 
 looked_up <- movie_keywords$tconst %>% unique()
-
 movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
 
 for (i in 1:1000){
