@@ -23,6 +23,7 @@ tconst <- movies$tconst[1]
 tconst <- "tt0120855"  # Disney Tarzan
 tconst <- "tt0304141"  # Harry Potter
 tconst <- "tt0073486"
+tconst <- "tt3233224"
 url <- paste0('https://www.imdb.com/title/',tconst,'/keywords')
 webpage <- read_html(url)
 tag_html <- html_nodes(webpage,'.sodatext')
@@ -37,6 +38,7 @@ movie_keys <- function(id){
   webpage <- read_html(url)
   tag_html <- html_nodes(webpage,'.sodatext')
   tags <- trimws(gsub('[\n]', '', html_text(tag_html)))
+  if (length(tags)==0) tags="No Keywords"
   keywords <- data.frame("tconst"=id,"keywords"=tags)
   return(keywords)
 }
