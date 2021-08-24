@@ -62,17 +62,22 @@ based_on_comic <-c("based on comic book","based on comic","based on graphic nove
 looked_up <- movie_keywords$tconst %>% unique()
 movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
 
-for (i in 1:1000){
-  print(paste("Looking up keywords for movie",i,movies_notyet$primaryTitle[i]))
-  keys <- movie_keys(movies_notyet$tconst[i])
-  if (nrow(keys %>% filter(keywords %in% based_on_book))>0) {
-    print("                  - Based on a Book")
-  } else
-    if (nrow(keys %>% filter(keywords %in% based_on_comic))>0)  {
-      print("                  - Based on a Comic")
-      
-    }
-  movie_keywords <- rbind(movie_keywords,keys)
+while(nrow(movies_notyet)>0){
+  looked_up <- movie_keywords$tconst %>% unique()
+  movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
+  for (i in 1:100){
+    tryCatch({
+      print(paste("Looking up keywords for movie",i,movies_notyet$primaryTitle[i]))
+      keys <- movie_keys(movies_notyet$tconst[i])
+      if (nrow(keys %>% filter(keywords %in% based_on_book))>0) {
+        print("                  - Based on a Book")
+      } else
+        if (nrow(keys %>% filter(keywords %in% based_on_comic))>0)  {
+          print("                  - Based on a Comic")
+        }
+      movie_keywords <- rbind(movie_keywords,keys)
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
-
-save(movie_keywords,file=paste0(DATA_DIR,"/movie_keywords.RData"))
+  print("Saving Keywords Data Frame")
+  save(movie_keywords,file=paste0(DATA_DIR,"/movie_keywords.RData"))
+}
