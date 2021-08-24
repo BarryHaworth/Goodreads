@@ -51,6 +51,12 @@ if (!exists("movie_keywords")) {
   movie_keywords <- keywords(movies_10K$tconst[1])  # Initialise the keywords data frame
 }
 
+based_on_book <- c("based on novel","based on book","based on play","based on short story",
+                   "based on young adult novel","based on children's book","based on a novel",
+                   "based on novella","based on bestseller","based on book series")
+based_on_comic <-c("based on comic book","based on comic","based on graphic novel","based on manga")
+
+
 # Get the list of IDs looked up
 
 looked_up <- movie_keywords$tconst %>% unique()
@@ -59,7 +65,13 @@ movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
 for (i in 1:1000){
   print(paste("Looking up keywords for movie",i,movies_notyet$primaryTitle[i]))
   keys <- movie_keys(movies_notyet$tconst[i])
-  if (length(grep("based on",keys))>0) print("                      - Based on a book (or something)")
+  if (nrow(keys %>% filter(keywords %in% based_on_book))>0) {
+    print("                  - Based on a Book")
+  } else
+    if (nrow(keys %>% filter(keywords %in% based_on_comic))>0)  {
+      print("                  - Based on a Comic")
+      
+    }
   movie_keywords <- rbind(movie_keywords,keys)
   }
 
