@@ -65,9 +65,11 @@ movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
 while(nrow(movies_notyet)>0){
   looked_up <- movie_keywords$tconst %>% unique()
   movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
+  print(paste("Movies Looked up:",length(looked_up),"Remaining:",nrow((movies_notyet))))
   for (i in 1:100){
     tryCatch({
-      print(paste("Looking up keywords for movie",i,movies_notyet$primaryTitle[i]))
+      print(paste(i,"Movie",movies_notyet$tconst[i]
+                  ,movies_notyet$primaryTitle[i]))
       keys <- movie_keys(movies_notyet$tconst[i])
       if (nrow(keys %>% filter(keywords %in% based_on_book))>0) {
         print("                  - Based on a Book")
