@@ -1,4 +1,4 @@
-# Idetify Tagged as Based on a book
+# Identify Tagged as Based on a book
 
 library(dplyr)
 library(tidyr)
@@ -19,3 +19,5 @@ based_on_book <- c("based on novel","based on book","based on play","based on sh
 based_on_comic <-c("based on comic book","based on comic","based on graphic novel","based on manga")
 
 movie_based_on_book <- movie_based %>% group_by(tconst) 
+
+save(movie_based_on_book,file=paste0(DATA_DIR,"/movie_based_on_book.RData"))
