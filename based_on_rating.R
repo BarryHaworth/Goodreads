@@ -40,7 +40,7 @@ vote_rip <- function(tconst){
 # Read the data
 load(file=paste0(DATA_DIR,"/movie_based_on_book.RData"))
 
-movie_id <- unique(movie_based_on_book$tconst)
+movie_id <- movie_based_on_book %>% select(tconst) %>% unique()
 
 if (file.exists(paste0(DATA_DIR,"/based_on_votes.RData"))){
   load(file=paste0(DATA_DIR,"/based_on_votes.RData"))
@@ -48,23 +48,24 @@ if (file.exists(paste0(DATA_DIR,"/based_on_votes.RData"))){
   based_on_votes <- vote_rip(movie_id[1])  # Initialise votes data frame
 }
 
+# Get the list of IDs looked up
 vote_id <- unique(based_on_votes$tconst)
 
-movie_id <- movie_id[!(movie_id %in% vote_id)]  # Filter against the ones already done
+movie_id <- movie_id %>% filter(!(tconst %in% vote_id))  # Filter against the ones already done
 
-label <- "Movies based on books"
-n.ids <- length(movie_id)
-count <- 0
-start.time <- Sys.time()
-
-for(id in movie_id){
-  count <- count + 1
-  ETA <- Sys.time() + (n.ids-count) * (Sys.time() - start.time)/count
-  print(paste("ID:",id,"#",count,"of",n.ids,
-              "Started:",format(start.time,"%H:%M:%S"),
-              "Time:",format(Sys.time(),"%H:%M:%S"),
-              "ETA:",format(ETA,"%H:%M:%S")))
-  based_on_votes      <- rbind(based_on_votes,vote_rip(id))
+while(nrow(movie_id)>0){
+  looked_up <- based_on_votes$tconst %>% unique()
+  movie_id <- movie_based_on_book %>% filter(!(tconst %in% looked_up)) %>% select(tconst) %>% unique()
+  print(paste("Movies Looked up:",length(looked_up),"Remaining:",nrow((movie_id))))
+  for (i in 1:100){
+    tryCatch({
+      id <- movie_id$tconst[i]
+      print(paste(i,"Movie",id))
+      based_on_votes <- rbind(based_on_votes,vote_rip(id))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  }
+  print("Saving Movie Votes Data Frame")
+  save(based_on_votes,file=paste0(DATA_DIR,"/based_on_votes.RData"))
 }
-save(based_on_votes,file=paste0(DATA_DIR,"/based_on_votes.RData")) # Save Votes data after each step
+
 
