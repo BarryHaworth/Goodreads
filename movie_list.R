@@ -56,9 +56,10 @@ save(writers,file=paste0(DATA_DIR,"/writers.RData"))
 # This next step does not work - cannot allocate enough space
 # Combined movie data
 movie_list <- writers %>% 
-  left_join(basics %>% select(tconst,primaryTitle,originalTitle),by="tconst") %>%
+  left_join(basics %>% select(tconst,primaryTitle,originalTitle,startYear),by="tconst") %>%
   left_join(names %>% select(nconst,primaryName),by="nconst") %>% 
-  rename(writer = primaryName) %>%
+  rename(writer    = primaryName,
+         movieYear = startYear) %>%
   left_join(ratings,by="tconst") %>% 
   rename(movie_rating=averageRating,movie_votes=numVotes) %>%
   filter(movie_votes >= 100)
