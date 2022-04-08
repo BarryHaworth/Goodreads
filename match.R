@@ -3,8 +3,7 @@
 
 library(dplyr)
 library(tidyr)
-#library(rvest)
-#options(timeout= 4000000)
+library(ggplot2)
 
 PROJECT_DIR <- "c:/R/Goodreads"
 DATA_DIR    <- paste0(PROJECT_DIR,"/data")
@@ -31,7 +30,7 @@ imdb <- movie_list_flagged %>%
          movieRating=(movieRating_01+2*movieRating_02+3*movieRating_03+4*movieRating_04+5*movieRating_05)/movieRatingSum ) %>%
   select(-c(originalTitle,Date,movie_rating,movie_votes,Vote_01,Vote_02,Vote_03,Vote_04,Vote_05,Vote_06,Vote_07,Vote_08,Vote_09,Vote_10))
 
-print(head(movies),width=200)
+print(head(imdb),width=200)
 
 goodreads <- books %>% rename(bookTitle=Name,
                           bookWriter=Authors,
@@ -45,9 +44,31 @@ goodreads <- books %>% rename(bookTitle=Name,
                           bookRatingSum=rating_total) %>%
   select(-"Language")
 
+# Goodreads data has multiple entries for the same book (title & author is identical, publication year & vote counts vary)
+# Filter to keep one record per title/author, keeping the first year within author/title
+
+goodreads <- goodreads %>%
+  group_by(bookWriter,bookTitle) %>%
+  arrange(bookYear) %>%
+  filter(row_number()==1) %>%
+  ungroup()
+
 head(goodreads)
 
 #  Next, try merging it
+
+perfect_match <- imdb %>% inner_join(goodreads,by=c("movieTitle"="bookTitle","movieWriter"="bookWriter"))
+
+# Now to compare
+
+comparison <- perfect_match %>%
+  select(-c(movieRating_01,movieRating_02,movieRating_03,movieRating_04,movieRating_05,
+            bookRating_01,bookRating_02,bookRating_03,bookRating_04,bookRating_05)) %>%
+  mutate(delta=bookRating-movieRating,
+         best=case_when(delta>0 ~ "Book",TRUE ~ "Movie"))
+
+hist(comparison$delta)
+table(comparison$best)
 
 # Merge by Author?
 
