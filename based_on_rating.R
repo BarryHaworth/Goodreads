@@ -61,7 +61,7 @@ while(nrow(movie_id)>0){
     tryCatch({
       id <- movie_id$tconst[i]
       print(paste(i,"Movie",id))
-      based_on_votes <- rbind(based_on_votes,vote_rip(id))
+      based_on_votes <- bind_rows(based_on_votes,vote_rip(id))
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   print("Saving Movie Votes Data Frame")

@@ -4,7 +4,7 @@
 # Disadvantage is that writers can be identified, but it
 # returns a list of all writes (script writers, book writers)
 # and has no way to identify those movies based on a book
-# Need to split crew table when there are multiple writers listsed 
+# Need to split crew table when there are multiple writers listed 
 # Tried splitting methods from this page:
 # https://stackoverflow.com/questions/13773770/split-comma-separated-strings-in-a-column-into-separate-rows
 # Turns out: it takes time.
@@ -53,7 +53,6 @@ writers     %>% filter(tconst=="tt0120855")
 
 save(writers,file=paste0(DATA_DIR,"/writers.RData"))
 
-# This next step does not work - cannot allocate enough space
 # Combined movie data
 movie_list <- writers %>% 
   left_join(basics %>% select(tconst,primaryTitle,originalTitle,startYear),by="tconst") %>%

@@ -79,7 +79,7 @@ while(nrow(movies_notyet)>0){
         if (nrow(keys %>% filter(keywords %in% based_on_comic))>0)  {
           print("                  - Based on a Comic")
         }
-      movie_keywords <- rbind(movie_keywords,keys)
+      movie_keywords <- bind_rows(movie_keywords,keys)
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   print("Saving Keywords Data Frame")
