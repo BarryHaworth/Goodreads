@@ -38,11 +38,7 @@ writers <- crew %>%
   filter(writers != "\\N") %>% 
   select(-directors) 
 
-# For testing:
-writers_test <- head(writers,1000)
-
 # This method is very slow but it works.
-# writers <- writers_test %>%
 writers <- writers %>%
   separate_rows(writers)  %>%
   rename(nconst=writers)

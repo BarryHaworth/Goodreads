@@ -1,5 +1,6 @@
 # Movies Tagged as Based on a book
 # Rip IMDB to find tags
+# All movies with 100+ votes
 
 library(dplyr)
 library(rmutil)
@@ -13,7 +14,8 @@ DATA_DIR    <- paste0(PROJECT_DIR,"/data")
 load(file=paste0(DATA_DIR,"/movie_list.RData"))
 
 movies <- movie_list %>% 
-  filter(movie_votes> 1000) %>%
+  filter(movie_votes> 500) %>%
+#  filter(movie_votes> 100) %>%
   select("tconst","movie_votes","primaryTitle") %>%
   arrange(-movie_votes) %>%
   unique()
@@ -21,9 +23,7 @@ movies <- movie_list %>%
 # Rip the keywords page - test
 tconst <- movies$tconst[1]
 tconst <- "tt0120855"  # Disney Tarzan
-tconst <- "tt0304141"  # Harry Potter
-tconst <- "tt0073486"
-tconst <- "tt3233224"
+#tconst <- "tt0304141"  # Harry Potter
 url <- paste0('https://www.imdb.com/title/',tconst,'/keywords')
 webpage <- read_html(url)
 tag_html <- html_nodes(webpage,'.sodatext')
@@ -68,7 +68,7 @@ while(nrow(movies_notyet)>0){
   looked_up <- movie_keywords$tconst %>% unique()
   movies_notyet <- movies %>% filter(!(tconst %in% looked_up))
   print(paste("Movies Looked up:",length(looked_up),"Remaining:",nrow((movies_notyet))))
-  for (i in 1:100){
+  for (i in 1:min(100,nrow(movies_notyet))){
     tryCatch({
       print(paste(i,"Movie",movies_notyet$tconst[i]
                   ,movies_notyet$primaryTitle[i]))
