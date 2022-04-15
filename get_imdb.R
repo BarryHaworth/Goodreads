@@ -33,11 +33,11 @@ get_title("title.ratings")
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
 # basics <- basics[basics$titleType=="movie",]  # Only keep movies
-basics <- basics[basics$titleType %in% c("movie","tvMovie"),]  # Only keep selected types
-# basics <- basics[is.na(basics$titleType) == FALSE,]     # Drop unknown type
+keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","tvSpecial")
+basics <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
+
 basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown runtime
-basics <- basics[basics$startYear <= 
-                   as.numeric(substr(Sys.Date(),1,4)),]   # drop release date after this year
+basics <- basics[basics$startYear <= as.numeric(substr(Sys.Date(),1,4)),]   # drop release date after this year
 # Set types for columns
 basics$titleType <- as.factor(basics$titleType)
 basics$isAdult   <- as.numeric(basics$isAdult)
