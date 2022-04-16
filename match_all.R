@@ -1,7 +1,12 @@
 #  Match the movies based on books with the book details
 #  This version matches on all movies regardless of whether they are flagged
 #  and ignores votes - those are added in a later step
-#  This version still needs work. (10/04/2022)
+#  This version merges movies and books with at least 100 votes.
+#  Matches:
+#  perfect_match_primary - exact writer match, exact primary movie title to book title match
+#  perfect_match_original - exact writer match, exact original movie title to book title match
+#  fuzzy_title  - exact writer match, fuzzy title match (best of primary or original)
+#  fuzzy_writer - exact title match (to either primary or original), best fuzzy writer name match
 
 library(dplyr)
 library(tidyr)
@@ -19,8 +24,10 @@ load(file=paste0(DATA_DIR,"/books.RData"))               # Books from Goodreads
 # Format data ready for use
 imdb <- movie_list %>% 
   rename(movieWriter=writer,
+         movieVotes=movie_votes,
          movieTitlePrimary=primaryTitle,
          movieTitleOriginal=originalTitle) %>%
+  filter(movieVotes>=100) %>%
   mutate(movieURL=paste0("https://www.imdb.com/title/",tconst)) %>%
   select(-c(movie_rating))
 
