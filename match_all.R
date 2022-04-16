@@ -1,6 +1,7 @@
 #  Match the movies based on books with the book details
-#  This version matches on all movies regardless of whether they are flagged.
-# This version still needs work. (10/04/2022)
+#  This version matches on all movies regardless of whether they are flagged
+#  and ignores votes - those are added in a later step
+#  This version still needs work. (10/04/2022)
 
 library(dplyr)
 library(tidyr)
@@ -12,34 +13,30 @@ DATA_DIR    <- paste0(PROJECT_DIR,"/data")
 
 # First, load the saved data
 
-load(file=paste0(DATA_DIR,"/movie_list_flagged.RData"))  # Movies based on books
-load(file=paste0(DATA_DIR,"/based_on_votes.RData"))      # IMDB votes for movie based on books.
+load(file=paste0(DATA_DIR,"/movie_list.RData"))          # Movies 
 load(file=paste0(DATA_DIR,"/books.RData"))               # Books from Goodreads
 
-# Next, format it ready for use
-imdb <- movie_list_flagged %>% 
-  rename(movieTitle=primaryTitle,
-         movieWriter=writer) %>%
-  select(-c(originalTitle))
+# Format data ready for use
+imdb <- movie_list %>% 
+  rename(movieWriter=writer,
+         movieTitlePrimary=primaryTitle,
+         movieTitleOriginal=originalTitle) %>%
+  mutate(movieURL=paste0("https://www.imdb.com/title/",tconst)) %>%
+  select(-c(movie_rating))
 
-print(head(imdb),width=200)
+head(imdb)
 
 goodreads <- books %>% 
   rename(bookTitle=Name,
          bookWriter=Authors,
-         bookRating=Rating,
          bookYear=PublishYear,
-         bookRating_01=rating_1,
-         bookRating_02=rating_2,
-         bookRating_03=rating_3,
-         bookRating_04=rating_4,
-         bookRating_05=rating_5,
          bookVotes=rating_total) %>%
-  mutate(bookRating=(bookRating_01+2*bookRating_02+3*bookRating_03+4*bookRating_04+5*bookRating_05)/bookVotes ) %>%
-  select(-"Language")
+  filter(bookVotes>=100) %>%
+  mutate(bookURL=paste0("https://www.goodreads.com/book/show/",Id)) %>%
+  select(-c("Language","Rating","rating_1","rating_2","rating_3","rating_4","rating_5"))
 
 # Goodreads data has multiple editions for the same book (title & author are identical, publication year & vote counts vary)
-# Filter to keep one record per title/author, keeping the edition with the largst number of votes
+# Filter to keep one record per title/author, keeping the edition with the largest number of votes
 
 goodreads <- goodreads %>%
   group_by(bookWriter,bookTitle) %>%
@@ -49,70 +46,90 @@ goodreads <- goodreads %>%
 
 head(goodreads)
 
-#  Next, try merging it
+# Matching
+# Perfect Match: exact match by title(s) and author
 
-perfect_match <- imdb %>% inner_join(goodreads,by=c("movieTitle"="bookTitle","movieWriter"="bookWriter")) 
+perfect_match_primary <- imdb %>% 
+  inner_join(goodreads,by=c("movieTitlePrimary"="bookTitle","movieWriter"="bookWriter"),keep=TRUE) %>%
+  mutate(matchType="Exact Primary Title Exact Author")
 
 # Merge by Author: Author is exact match, title is fuzzy
 
-# Filter the movies:
+# Filter the movies to remove matches:
 
-matched_id <- perfect_match %>% select(tconst) %>% unique()
+matched_id <- perfect_match_primary %>% select(tconst) %>% unique()
 
 unmatched_imdb <- imdb %>% anti_join(matched_id)
 
-fuzzy <- unmatched_imdb %>% 
-  inner_join(goodreads,by=c("movieWriter"="bookWriter"))
+# Perfect match on original title
 
-fuzzy$title_dist = stringdist(fuzzy$movieTitle,fuzzy$bookTitle,method = "jw")  
+perfect_match_original <- unmatched_imdb %>% 
+  inner_join(goodreads,by=c("movieTitleOriginal"="bookTitle","movieWriter"="bookWriter"),keep=TRUE) %>%
+  mutate(matchType="Exact Original Title Exact Author")
 
-fuzzy <- fuzzy %>% arrange("tconst",-title_dist)
+matched_id <- perfect_match_original %>% select(tconst) %>% unique()
 
-fuzzy_title <- fuzzy %>%
+unmatched_imdb <- unmatched_imdb %>% anti_join(matched_id)
+
+# Merge by Author: Author is exact match, Title is fuzzy
+
+fuzzy_t <- unmatched_imdb %>% 
+  inner_join(goodreads,by=c("movieWriter"="bookWriter"),keep=TRUE) %>%
+  rowwise() %>%
+  mutate(title_dist_primary = stringdist(movieTitlePrimary ,bookTitle,method = "jw"),
+         title_dist_original= stringdist(movieTitleOriginal,bookTitle,method = "jw"),
+         title_dist=min(title_dist_primary,title_dist_original))
+
+fuzzy_title <- fuzzy_t %>%
   group_by(tconst) %>%
   top_n(1, -title_dist) %>%
   ungroup() %>%
-  filter(title_dist <= 0.25)
+  filter(title_dist <= 0.25) %>%
+  mutate(matchType="Exact Author Fuzzy Title")
 
-# Merge by Title: Title is exact match, author is fuzzy
+matched_id <- fuzzy_title %>% select(tconst) %>% unique()
 
-matched_id <- perfect_match %>% bind_rows(fuzzy_title) %>% select(tconst) %>% unique()
+unmatched_imdb <- unmatched_imdb %>% anti_join(matched_id)
 
-unmatched_imdb <- imdb %>% anti_join(matched_id)
+# Merge by Title: Title is exact match, writer is fuzzy
 
-fuzzy <- unmatched_imdb %>% 
-  inner_join(goodreads,by=c("movieTitle"="bookTitle")) %>%
-  select(-c(movieRating_01,movieRating_02,movieRating_03,movieRating_04,movieRating_05,
-            bookRating_01,bookRating_02,bookRating_03,bookRating_04,bookRating_05,
-            based_on_book,based_on_comic)) 
+fuzzy_w_primary <- unmatched_imdb %>% 
+  inner_join(goodreads,by=c("movieTitlePrimary"="bookTitle"),keep=TRUE)  %>%
+  rowwise() %>%
+  mutate(writer_dist = stringdist(movieWriter ,bookWriter,method = "jw"))
 
-fuzzy$writer_dist = stringdist(fuzzy$movieWriter,fuzzy$bookWriter,method = "jw")  
+fuzzy_w_original <- unmatched_imdb %>% 
+  inner_join(goodreads,by=c("movieTitleOriginal"="bookTitle"),keep=TRUE) %>%
+  rowwise() %>%
+  mutate(writer_dist = stringdist(movieWriter ,bookWriter,method = "jw"))
 
-fuzzy <- fuzzy %>% arrange("movieWriter","movieTitle",-writer_dist)
+fuzzy_w <- bind_rows(fuzzy_w_primary,fuzzy_w_original) %>% arrange("tconst",-writer_dist)
 
-fuzzy_writer <- fuzzy %>%
-  group_by(movieWriter,movieTitle) %>%
+fuzzy_writer <- fuzzy_w %>%
+  group_by(tconst) %>%
   top_n(1, -writer_dist) %>%
   ungroup() %>%
-  filter(writer_dist <= 0.25)
+  filter(writer_dist <= 0.202)  %>% # Limit chosen by inspection and may be wrong.
+  mutate(matchType="Fuzzy Author Exact Title")
 
 # Fuzzy match: Both title and author are fuzzy
+# Do this later. Maybe.
 
-# Now to compare
+# Combine the matches and save them.
 
-perfect_match$bookTitle = perfect_match$movieTitle
+matched <- bind_rows(perfect_match_original,
+                     perfect_match_primary,
+                     fuzzy_title,
+                     fuzzy_writer) %>%
+  rowwise() %>%
+  mutate(writer_dist = stringdist(movieWriter ,bookWriter,method = "jw"),
+         title_dist_primary = stringdist(movieTitlePrimary ,bookTitle,method = "jw"),
+         title_dist_original= stringdist(movieTitleOriginal,bookTitle,method = "jw"),
+         title_dist=min(title_dist_primary,title_dist_original))
 
-comparison <- bind_rows(perfect_match %>% mutate(bookWriter=movieWriter, bookTitle=movieTitle, title_dist=0, writer_dist=0),
-                        fuzzy_title   %>% mutate(bookWriter=movieWriter, writer_dist=0),
-                        fuzzy_writer  %>% mutate(bookTitle=movieTitle, title_dist=0)) %>%
-  mutate(delta=bookRating-movieRating,
-         best=case_when(delta>0 ~ "Book",TRUE ~ "Movie"))
+save(matched,file=paste0(DATA_DIR,"/matched.RData"))
 
-summary(comparison$delta)
-hist(comparison$delta,nclass=20)
-plot(comparison$bookRating,comparison$movieRating)
-table(comparison$best)
-cor(comparison$bookRating,comparison$movieRating)
+table(matched$matchType)
 
-save(comparison,file=paste0(DATA_DIR,"/comparison.RData"))
-
+head(matched)
+summary(matched)
