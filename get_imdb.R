@@ -33,7 +33,7 @@ get_title("title.ratings")
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
 # basics <- basics[basics$titleType=="movie",]  # Only keep movies
-keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","tvSpecial")
+keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries")
 basics <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
 
 basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown runtime
