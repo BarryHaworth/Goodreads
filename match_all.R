@@ -53,6 +53,11 @@ goodreads <- goodreads %>%
 
 head(goodreads)
 
+# Edits.  
+# Perform edits to selected titles etc
+
+goodreads["bookWriter"][goodreads["bookWriter"]=="Emmuska Orczy"] <- "Baroness Emmuska Orczy"
+
 # Matching
 # Perfect Match: exact match by title(s) and author
 
