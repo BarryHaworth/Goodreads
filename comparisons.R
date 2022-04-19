@@ -7,6 +7,7 @@ library(scales)
 
 PROJECT_DIR <- "c:/R/Goodreads"
 DATA_DIR    <- paste0(PROJECT_DIR,"/data")
+PLOT_DIR    <- paste0(PROJECT_DIR,"/plots")
 
 # First, load the saved data
 
@@ -20,17 +21,39 @@ table(combined$titleType,combined$best)
 cor(combined$bookRating,combined$movieRating)
 
 ggplot(data=combined, aes(x=movieRating, y=bookRating, color=titleType)) + 
-  geom_point(size=1) +
+  geom_point(size=0.1) +
   scale_x_continuous(limits=c(1,5)) +
   scale_y_continuous(limits=c(1,5)) +
   theme(legend.position = "bottom") +
   ggtitle("Book rating vs Movie rating") +
   geom_abline(slope=1)
+ggsave(paste0(PLOT_DIR,"/scatter.png"))
+
+ggplot(data=combined, aes(x=movieRating, y=bookRating, color=titleType)) + 
+  geom_point(size=0.1) +
+  scale_x_continuous(limits=c(1,5)) +
+  scale_y_continuous(limits=c(1,5)) +
+  theme(legend.position = "bottom") +
+  facet_wrap(~titleType)+
+  ggtitle("Book rating vs Movie rating") +
+  geom_abline(slope=1)
+ggsave(paste0(PLOT_DIR,"/scatter_by_type.png"))
 
 ggplot(data=combined, aes(y=delta,factor(titleType))) + 
   geom_boxplot() +
   ggtitle("Delta (book-movie) by type") 
+ggsave(paste0(PLOT_DIR,"/boxplot.png"))
 
 ggplot(data=combined) + geom_histogram(aes(x=delta, fill = ..x..), binwidth = 0.1) + 
   scale_fill_gradient2(low = muted("red"),mid = "white",high = muted("blue"),midpoint = 0 ) +
+  geom_vline(aes(xintercept=0))+
   ggtitle("Difference between book and movie")
+ggsave(paste0(PLOT_DIR,"/histogram.png"))
+
+ggplot(data=combined) + geom_histogram(aes(x=delta, fill = ..x..), binwidth = 0.1) + 
+  scale_fill_gradient2(low = muted("red"),mid = "white",high = muted("blue"),midpoint = 0 ) +
+  geom_vline(aes(xintercept=0))+
+  facet_wrap(~titleType,scales="free_y")+
+  ggtitle("Difference between book and movie by media type")
+ggsave(paste0(PLOT_DIR,"/histogram_by_type.png"))
+
