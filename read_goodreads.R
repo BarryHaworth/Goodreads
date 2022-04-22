@@ -1,6 +1,7 @@
 # Read the Goodreads Data
 #  Data files taken from Kaggle goodreads data sets
 #  https://www.kaggle.com/bahramjannesarr/goodreads-book-datasets-10m 
+# Note:  As at 19/04/2022 the latest Goodreads data is 03/12/2020
 
 library(dplyr)
 library(rmutil)
