@@ -39,7 +39,7 @@ those that have changed. \<- DONE
 
 **combine**.R - combine the matched movies&books with their respective ratings.
 
-**compare**.R - perform books and movie rating comparisons for movies matched
+**comparisons**.R - perform books and movie rating comparisons for movies matched
 with books.
 
 Superceeded (old_code):
