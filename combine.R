@@ -8,7 +8,7 @@
 library(dplyr)
 library(openxlsx)
 
-PROJECT_DIR <- "c:/R/Goodreads"
+PROJECT_DIR <- "c:/R/two_goats"
 DATA_DIR    <- paste0(PROJECT_DIR,"/data")
 
 # First, load the saved data
