@@ -55,7 +55,7 @@ save(writers,file=paste0(DATA_DIR,"/writers.RData"))
 
 # Combined movie data
 movie_list <- writers %>% 
-  left_join(basics %>% select(tconst,primaryTitle,originalTitle,titleType,startYear),by="tconst") %>%
+  left_join(basics %>% select(tconst,primaryTitle,originalTitle,titleType,startYear,episodes,totalRuntime),by="tconst") %>%
   left_join(names %>% select(nconst,primaryName),by="nconst") %>% 
   rename(writer    = primaryName,
          movieYear = startYear) %>%

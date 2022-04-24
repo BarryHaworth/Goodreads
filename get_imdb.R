@@ -43,13 +43,8 @@ episodes <- episode %>%
 
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
-# basics <- basics[basics$titleType=="movie",]  # Only keep movies
-keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries")
-basics <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
-
-basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown run time
-basics <- basics[basics$startYear <= as.numeric(substr(Sys.Date(),1,4)),]   # drop release date after this year
-basics <- basics %>% left_join(episodes,by="tconst") %>% replace_na(list(episodes=1)) %>% mutate(totalRuntime=episodes*runtimeMinutes)
+keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries")  # List of types to keep
+basics    <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
 
 # Set types for columns
 basics$titleType <- as.factor(basics$titleType)
@@ -57,6 +52,18 @@ basics$isAdult   <- as.numeric(basics$isAdult)
 basics$startYear <- as.numeric(basics$startYear)
 basics$endYear   <- as.numeric(basics$endYear)
 basics$runtimeMinutes <- as.numeric(basics$runtimeMinutes)
+
+basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown run time
+basics <- basics[basics$startYear <= as.numeric(substr(Sys.Date(),1,4)),]   # drop release date after this year
+
+# Define total run time.  
+# Note that the runimeMinutes variable from IMDB is the total for movies or miniseries, 
+# but must be multiplied by total number of episodes for a TV series
+basics <- basics %>% 
+  left_join(episodes,by="tconst") %>% 
+  replace_na(list(episodes=1)) %>% 
+  mutate(totalRuntime=ifelse(titleType=="tvSeries", episode*runtimeMinutes,runtimeMinutes))
+
 save(basics,file=paste0(DATA_DIR,"/basics.RData"))
 
 #  Filter and save the results
@@ -93,7 +100,3 @@ akas  <- read.delim(paste0(FILE_DIR,"/title.akas.tsv.gz") ,stringsAsFactors = FA
 akas <- akas %>% rename(tconst=titleId)
 akas  <- akas %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 save(akas,file=paste0(DATA_DIR,"/akas.RData"))   # Save Crew Data Frame
-
-# Episodes
-episode  <- read.delim(paste0(FILE_DIR,"/title.episode.tsv.gz") ,stringsAsFactors = FALSE)
-save(episode,file=paste0(DATA_DIR,"/episode.RData"))   # Save Crew Data Frame
