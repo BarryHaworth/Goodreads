@@ -45,11 +45,42 @@ ggplot(data=combined, aes(y=delta,factor(titleType))) +
   ggtitle("Delta (book-movie) by type") 
 ggsave(paste0(PLOT_DIR,"/boxplot.png"))
 
+delta_mean <- mean(combined$delta)
+book_pct  <- sum(combined$best=="Book")/length(combined$best)
+movie_pct <- 1-book_pct
 ggplot(data=combined) + 
   geom_histogram(aes(x=delta),  fill="cornflowerblue" ,color="white",binwidth = 0.1) + 
-  geom_vline(aes(xintercept=0))+
-  ggtitle("Difference between book and movie")
+  geom_vline(aes(xintercept=0),color="blue")+
+  geom_vline(aes(xintercept=delta_mean),color="black")+
+  geom_text(aes(x=Inf, y=Inf, label=paste("Book is better\n",percent(book_pct,accuracy=0.1),"of the time")),vjust="inward", hjust="inward")+
+  geom_text(aes(x=-Inf, y=Inf, label=paste("Movie is better\n",percent(movie_pct,accuracy=0.1),"of the time" )),vjust="inward", hjust="inward")+
+  ggtitle("Difference between book and movie (all records)",
+          subtitle=paste("Mean=",round(delta_mean,3))) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 ggsave(paste0(PLOT_DIR,"/histogram.png"))
+
+hist_type <- function(type){
+  temp_data <- combined %>% filter(titleType==type)
+  delta_mean <- mean(temp_data$delta)
+  book_pct  <- sum(temp_data$best=="Book")/length(temp_data$best)
+  movie_pct <- 1-book_pct
+  print(ggplot(data=temp_data) + 
+    geom_histogram(aes(x=delta),  fill="cornflowerblue" ,color="white",binwidth = 0.1) + 
+    geom_vline(aes(xintercept=0),color="blue")+
+    geom_vline(aes(xintercept=delta_mean),color="black")+
+    geom_text(aes(x=Inf, y=Inf, label=paste("Book is better\n",percent(book_pct,accuracy=0.1),"of the time")),vjust="inward", hjust="inward")+
+    geom_text(aes(x=-Inf, y=Inf, label=paste(type,"is better\n",percent(movie_pct,accuracy=0.1),"of the time" )),vjust="inward", hjust="inward")+
+    ggtitle(paste("Difference between Book and",type),
+            subtitle=paste("Mean=",round(delta_mean,3))) +
+    theme(plot.title = element_text(hjust = 0.5),
+          plot.subtitle = element_text(hjust = 0.5)))
+  ggsave(paste0(PLOT_DIR,"/histogram_",type,".png"))
+}
+hist_type("movie")
+hist_type("tvMovie")
+hist_type("tvMiniSeries")
+hist_type("tvSeries")
 
 ggplot(data=combined) + 
   geom_histogram(aes(x=delta),  fill="cornflowerblue" ,color="white",binwidth = 0.1) + 

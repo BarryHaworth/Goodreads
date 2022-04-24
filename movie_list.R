@@ -11,6 +11,9 @@
 # I tried the best method listed there (the jaap_DT2 method) but couldn't get it to work easily,
 # so reverted to the str_split method
 
+# For a possible update, could change the movie title details to include each different movie title
+# including the primary title, the original title, and all the AKA titles.
+
 library(dplyr)
 library(rmutil)
 library(tidyr)
@@ -24,11 +27,11 @@ load(file=paste0(DATA_DIR,"/basics.RData"))
 load(file=paste0(DATA_DIR,"/names.RData"))
 load(file=paste0(DATA_DIR,"/ratings.RData"))
 
-# Harry Potter where are you?
-crew       %>% filter(tconst=="tt0304141")
-basics     %>% filter(tconst=="tt0304141")
-names      %>% filter(nconst=="nm0746830")
-ratings    %>% filter(tconst=="tt0304141")
+# Checking: Harry Potter where are you?
+#crew       %>% filter(tconst=="tt0304141")
+#basics     %>% filter(tconst=="tt0304141")
+#names      %>% filter(nconst=="nm0746830")
+#ratings    %>% filter(tconst=="tt0304141")
 
 # Identify writers of a movie
 head(crew)
@@ -44,8 +47,9 @@ writers <- writers %>%
   rename(nconst=writers)
 
 head(writers)
-writers     %>% filter(tconst=="tt0304141")
-writers     %>% filter(tconst=="tt0120855")
+# Checking
+#writers     %>% filter(tconst=="tt0304141")
+#writers     %>% filter(tconst=="tt0120855")
 
 save(writers,file=paste0(DATA_DIR,"/writers.RData"))
 
@@ -64,10 +68,8 @@ head(movie_list)
 save(movie_list,file=paste0(DATA_DIR,"/movie_list.RData"))
 
 # Checking.  What happened to Harry Potter?
-
-crew       %>% filter(tconst=="tt0304141")
-basics     %>% filter(tconst=="tt0304141")
-writers    %>% filter(tconst=="tt0304141")
-movie_list %>% filter(tconst=="tt0304141")
-
-movie_list    %>% filter(tconst=="tt0120855") # Disney Tarzan
+#crew       %>% filter(tconst=="tt0304141")
+#basics     %>% filter(tconst=="tt0304141")
+#writers    %>% filter(tconst=="tt0304141")
+#movie_list %>% filter(tconst=="tt0304141")
+#movie_list    %>% filter(tconst=="tt0120855") # Disney Tarzan

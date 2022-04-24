@@ -2,5 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.png
+plots/.png
 data/.RData
 data/

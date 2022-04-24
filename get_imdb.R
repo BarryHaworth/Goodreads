@@ -24,11 +24,12 @@ get_title <- function(file){
 
 # Download the files
 get_title("name.basics")
-get_title("title.akas")
 get_title("title.basics")
 get_title("title.crew")
-get_title("title.principals")
 get_title("title.ratings")
+
+get_title("title.principals")  
+get_title("title.akas")
 
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
@@ -74,5 +75,11 @@ save(principals,file=paste0(DATA_DIR,"/principals.RData"))  # Save Principals da
 crew  <- read.delim(paste0(FILE_DIR,"/title.crew.tsv.gz") ,stringsAsFactors = FALSE)
 crew  <- crew %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 save(crew,file=paste0(DATA_DIR,"/crew.RData"))   # Save Crew Data Frame
+
+# AKAs
+akas  <- read.delim(paste0(FILE_DIR,"/title.akas.tsv.gz") ,stringsAsFactors = FALSE)
+akas <- akas %>% rename(tconst=titleId)
+akas  <- akas %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
+save(akas,file=paste0(DATA_DIR,"/akas.RData"))   # Save Crew Data Frame
 
 
