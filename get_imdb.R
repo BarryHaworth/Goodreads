@@ -27,9 +27,19 @@ get_title("name.basics")
 get_title("title.basics")
 get_title("title.crew")
 get_title("title.ratings")
-
+get_title("title.episode")
 get_title("title.principals")  
 get_title("title.akas")
+
+# Episodes
+episode  <- read.delim(paste0(FILE_DIR,"/title.episode.tsv.gz") ,stringsAsFactors = FALSE)
+save(episode,file=paste0(DATA_DIR,"/episode.RData"))   # Save Crew Data Frame
+
+episodes <- episode %>% 
+  group_by(parentTconst) %>%
+  select(-tconst) %>%
+  summarise(episodes = n()) %>%
+  rename(tconst=parentTconst)
 
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
@@ -37,8 +47,10 @@ basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors 
 keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries")
 basics <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
 
-basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown runtime
+basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown run time
 basics <- basics[basics$startYear <= as.numeric(substr(Sys.Date(),1,4)),]   # drop release date after this year
+basics <- basics %>% left_join(episodes,by="tconst") %>% replace_na(list(episodes=1)) %>% mutate(totalRuntime=episodes*runtimeMinutes)
+
 # Set types for columns
 basics$titleType <- as.factor(basics$titleType)
 basics$isAdult   <- as.numeric(basics$isAdult)
@@ -82,4 +94,6 @@ akas <- akas %>% rename(tconst=titleId)
 akas  <- akas %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 save(akas,file=paste0(DATA_DIR,"/akas.RData"))   # Save Crew Data Frame
 
-
+# Episodes
+episode  <- read.delim(paste0(FILE_DIR,"/title.episode.tsv.gz") ,stringsAsFactors = FALSE)
+save(episode,file=paste0(DATA_DIR,"/episode.RData"))   # Save Crew Data Frame

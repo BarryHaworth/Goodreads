@@ -4,5 +4,6 @@
 .Ruserdata
 .png
 plots/.png
+plots/*.png
 data/.RData
 data/
