@@ -3,8 +3,9 @@
 #  and ignores votes - those are added in a later step
 #  This version merges movies and books with at least 100 votes.
 #  Matches:
-#  perfect_match_primary - exact writer match, exact primary movie title to book title match
-#  perfect_match_original - exact writer match, exact original movie title to book title match
+#  perfect_primary - exact writer match, exact primary movie title to book title match
+#  perfect_original - exact writer match, exact original movie title to book title match
+#  perfect_aka  - exact writer match, exact AKA movie title to book title match
 #  fuzzy_title  - exact writer match, fuzzy title match (best of primary or original)
 #  fuzzy_writer - exact title match (to either primary or original), best fuzzy writer name match
 
@@ -61,25 +62,43 @@ goodreads["bookWriter"][goodreads["bookWriter"]=="Emmuska Orczy"] <- "Baroness E
 # Matching
 # Perfect Match: exact match by title(s) and author
 
-perfect_match_primary <- imdb %>% 
+perfect_primary <- imdb %>% 
   inner_join(goodreads,by=c("movieTitlePrimary"="bookTitle","movieWriter"="bookWriter"),keep=TRUE) %>%
   mutate(matchType="Exact Primary Title Exact Author")
 
-# Merge by Author: Author is exact match, title is fuzzy
-
 # Filter the movies to remove matches:
 
-matched_id <- perfect_match_primary %>% select(tconst) %>% unique()
+matched_id <- perfect_primary %>% select(tconst) %>% unique()
 
 unmatched_imdb <- imdb %>% anti_join(matched_id)
 
 # Perfect match on original title
 
-perfect_match_original <- unmatched_imdb %>% 
+perfect_original <- unmatched_imdb %>% 
   inner_join(goodreads,by=c("movieTitleOriginal"="bookTitle","movieWriter"="bookWriter"),keep=TRUE) %>%
   mutate(matchType="Exact Original Title Exact Author")
 
-matched_id <- perfect_match_original %>% select(tconst) %>% unique()
+matched_id <- perfect_original %>% select(tconst) %>% unique()
+
+unmatched_imdb <- unmatched_imdb %>% anti_join(matched_id)
+
+# AKA matching
+load(file=paste0(DATA_DIR,"/akas.RData"))   # Movie AKAs
+
+akas <- akas %>% select(tconst,title) %>% unique()
+
+unmatched_id <-unmatched_imdb %>% select(tconst) %>% unique()
+
+akas <- akas %>% inner_join(unmatched_id)
+
+good_aka <- goodreads %>% inner_join(akas, by=c("bookTitle"="title"))
+
+perfect_aka <- imdb %>% 
+  inner_join(good_aka,by=c("tconst","movieWriter"="bookWriter"),keep=TRUE) %>%
+  select(-tconst.y) %>% rename(tconst=tconst.x) %>%
+  mutate(matchType="Exact AKA Title Exact Author")
+
+matched_id <- perfect_aka %>% select(tconst) %>% unique()
 
 unmatched_imdb <- unmatched_imdb %>% anti_join(matched_id)
 
@@ -124,13 +143,16 @@ fuzzy_writer <- fuzzy_w %>%
   filter(writer_dist <= 0.202)  %>% # Limit chosen by inspection and may be wrong.
   mutate(matchType="Fuzzy Author Exact Title")
 
+# Fuzzy match: Exact AKA, fuzzy author.  Do later
+
 # Fuzzy match: Both title and author are fuzzy
 # Do this later. Maybe.
 
 # Combine the matches and save them.
 
-matched <- bind_rows(perfect_match_original,
-                     perfect_match_primary,
+matched <- bind_rows(perfect_original,
+                     perfect_primary,
+                     perfect_aka,
                      fuzzy_title,
                      fuzzy_writer) %>%
   rowwise() %>%
@@ -143,5 +165,5 @@ save(matched,file=paste0(DATA_DIR,"/matched.RData"))
 
 table(matched$matchType)
 
-head(matched)
-summary(matched)
+#head(matched)
+#summary(matched)

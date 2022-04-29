@@ -93,24 +93,36 @@ ggplot(data=combined) +
   ggtitle("Difference between book and movie by media type")
 ggsave(paste0(PLOT_DIR,"/histogram_by_type.png"))
 
+time_breaks <- c(30,60,90,120,180,240,300,480,600,900,1800,1200,3000,6000,12000,24000) # Total Time Breaks for tick marks
+
 # Delta by Length
 ggplot(data=combined %>% filter(totalRuntime >= 30, totalRuntime < 30000), 
        aes(x=totalRuntime, y=delta)) + 
   geom_point(size=0.2,color="deeppink") +
   geom_smooth() +
-  scale_x_log10() +
+  scale_x_log10(breaks=time_breaks) +
   theme(legend.position = "bottom") +
   ggtitle("Book vs Movie Delta by length in minutes") +
   theme(plot.title = element_text(hjust = 0.5))
-ggsave(paste0(PLOT_DIR,"/delta.png"))
+ggsave(paste0(PLOT_DIR,"/delta_all.png"))
+
+ggplot(data=combined %>% filter(totalRuntime >= 30, totalRuntime < 30000), 
+       aes(x=totalRuntime, y=delta, color=titleType)) + 
+  geom_point(size=0.2) +
+  geom_smooth() +
+  scale_x_log10(breaks=time_breaks) +
+  theme(legend.position = "bottom") +
+  ggtitle("Book vs Movie Delta by length in minutes") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave(paste0(PLOT_DIR,"/delta_types.png"))
 
 length_plot <- function(type){
-  temp_data <- combined %>% filter(titleType==type,totalRuntime >= 30, totalRuntime < 30000)
+  temp_data <- combined %>% filter(titleType==type, totalRuntime >= 30, totalRuntime < 30000)
   print(ggplot(data=temp_data, 
                aes(x=totalRuntime, y=delta)) + 
           geom_point(size=0.2,color="deeppink") +
           geom_smooth() +
-          scale_x_log10() +
+          scale_x_log10(breaks=time_breaks) +
           theme(legend.position = "bottom") +
           ggtitle(paste("Book vs Movie Delta by length in minutes for",type)) +
           theme(plot.title = element_text(hjust = 0.5)))
