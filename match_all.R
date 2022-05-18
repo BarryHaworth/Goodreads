@@ -45,9 +45,12 @@ goodreads <- books %>%
 
 # Goodreads data has multiple editions for the same book (title & author are identical, publication year & vote counts vary)
 # Filter to keep one record per title/author, keeping the edition with the largest number of votes
+# Create a count of different editions, and record the lowest year as the publication year.
 
 goodreads <- goodreads %>%
   group_by(bookWriter,bookTitle) %>%
+  mutate(pubYear = min(bookYear),
+         editions = n()) %>%
   arrange(-bookVotes) %>%
   filter(row_number()==1) %>%
   ungroup()

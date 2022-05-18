@@ -54,8 +54,8 @@ book_pct  <- sum(combined$best=="Book")/length(combined$best)
 movie_pct <- 1-book_pct
 ggplot(data=combined) + 
   geom_histogram(aes(x=delta),  fill="cornflowerblue" ,color="white",binwidth = 0.1) + 
-  geom_vline(aes(xintercept=0),color="blue")+
-  geom_vline(aes(xintercept=delta_mean),color="black")+
+  geom_vline(aes(xintercept=0),color="black")+
+  geom_vline(aes(xintercept=delta_mean),color="blue")+
   geom_text(aes(x=Inf, y=Inf, label=paste("Book is better\n",percent(book_pct,accuracy=0.1),"of the time")),vjust="inward", hjust="inward")+
   geom_text(aes(x=-Inf, y=Inf, label=paste("Movie is better\n",percent(movie_pct,accuracy=0.1),"of the time" )),vjust="inward", hjust="inward")+
   ggtitle("Difference between book and movie (all records)",
@@ -71,8 +71,8 @@ hist_type <- function(type){
   movie_pct <- 1-book_pct
   print(ggplot(data=temp_data) + 
     geom_histogram(aes(x=delta),  fill="cornflowerblue" ,color="white",binwidth = 0.1) + 
-    geom_vline(aes(xintercept=0),color="blue")+
-    geom_vline(aes(xintercept=delta_mean),color="black")+
+    geom_vline(aes(xintercept=0),color="black")+
+    geom_vline(aes(xintercept=delta_mean),color="blue")+
     geom_text(aes(x=Inf, y=Inf, label=paste("Book is better\n",percent(book_pct,accuracy=0.1),"of the time")),vjust="inward", hjust="inward")+
     geom_text(aes(x=-Inf, y=Inf, label=paste(type,"is better\n",percent(movie_pct,accuracy=0.1),"of the time" )),vjust="inward", hjust="inward")+
     ggtitle(paste("Difference between Book and",type),

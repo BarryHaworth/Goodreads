@@ -1,7 +1,8 @@
 # Get copies of files
 # Files are downloaded from IMDB.
-# Files are filtered to include movies & TV Movies only
+# Files are filtered to include movies & TV series/miniseries only
 
+library(tidyr)
 library(dplyr)
 library(rmutil)
 
@@ -42,9 +43,6 @@ episodes <- episode %>%
   rename(tconst=parentTconst)
 
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
-# Clean Basics
-keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries")  # List of types to keep
-basics    <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
 
 # Set types for columns
 basics$titleType <- as.factor(basics$titleType)
@@ -52,6 +50,10 @@ basics$isAdult   <- as.numeric(basics$isAdult)
 basics$startYear <- as.numeric(basics$startYear)
 basics$endYear   <- as.numeric(basics$endYear)
 basics$runtimeMinutes <- as.numeric(basics$runtimeMinutes)
+
+# Clean Basics
+keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries")  # List of types to keep
+basics    <- basics %>% filter(titleType %in% keeptypes)  # Only keep selected types
 
 basics <- basics[is.na(basics$runtimeMinutes)==FALSE,]  # Drop unknown run time
 basics <- basics[basics$startYear <= as.numeric(substr(Sys.Date(),1,4)),]   # drop release date after this year
@@ -61,8 +63,8 @@ basics <- basics[basics$startYear <= as.numeric(substr(Sys.Date(),1,4)),]   # dr
 # but must be multiplied by total number of episodes for a TV series
 basics <- basics %>% 
   left_join(episodes,by="tconst") %>% 
-  replace_na(list(episodes=1)) %>% 
-  mutate(totalRuntime=ifelse(titleType=="tvSeries", episode*runtimeMinutes,runtimeMinutes))
+  replace_na(list(episodes=1))  %>%  
+  mutate(totalRuntime=ifelse(titleType=="tvSeries", episodes*runtimeMinutes,runtimeMinutes))
 
 save(basics,file=paste0(DATA_DIR,"/basics.RData"))
 
@@ -71,7 +73,7 @@ movies_only <- basics %>% select(tconst)
 
 # Ratings
 ratings <- read.delim(paste0(FILE_DIR,"/title.ratings.tsv.gz") ,stringsAsFactors = FALSE)
-ratings <- ratings %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
+ratings <- ratings %>% inner_join(movies_only,by="tconst")   # Filter on Movies only
 save(ratings,file=paste0(DATA_DIR,"/ratings.RData"))
 
 # Names (Can't filter names as they don't have tconst)
@@ -86,8 +88,6 @@ principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAs
 principals <- principals %>% inner_join(movies_only,by="tconst")  # Filter on Movies only
 principals$category <- as.factor(principals$category)
 summary(principals$category)
-# principals$job <- as.factor(principals$job)
-# summary(principals$job)
 save(principals,file=paste0(DATA_DIR,"/principals.RData"))  # Save Principals data frame
 
 # Crew
