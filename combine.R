@@ -7,6 +7,7 @@
 
 library(dplyr)
 library(openxlsx)
+library(tidyr)
 
 PROJECT_DIR <- "c:/R/two_goats"
 DATA_DIR    <- paste0(PROJECT_DIR,"/data")
@@ -53,7 +54,8 @@ combined <- matched %>%
   mutate(delta=bookRating-movieRating,
          best=case_when(delta>0 ~ "Book",TRUE ~ "Movie")) %>%
   mutate(across(c(best,titleType),factor)) %>%
-  arrange(bookWriter,bookTitle,movieYear)
+  arrange(bookWriter,bookTitle,movieYear) %>%
+  unique()
 
 summary(combined$delta)
 hist(combined$delta,nclass=20)
