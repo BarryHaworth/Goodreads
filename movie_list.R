@@ -27,11 +27,17 @@ load(file=paste0(DATA_DIR,"/basics.RData"))
 load(file=paste0(DATA_DIR,"/names.RData"))
 load(file=paste0(DATA_DIR,"/ratings.RData"))
 
-# Checking: Harry Potter where are you?
-#crew       %>% filter(tconst=="tt0304141")
-#basics     %>% filter(tconst=="tt0304141")
-#names      %>% filter(nconst=="nm0746830")
-#ratings    %>% filter(tconst=="tt0304141")
+# Checking: Lightyear where are you?
+crew       %>% filter(tconst=="tt10298810")
+basics     %>% filter(tconst=="tt10298810")
+names      %>% filter(nconst=="tt10298810")
+ratings    %>% filter(tconst=="tt10298810")
+
+# Checking: Time Travellers Wife where are you?
+crew       %>% filter(tconst=="tt8783930")
+basics     %>% filter(tconst=="tt8783930")
+names      %>% filter(nconst=="tt8783930")
+ratings    %>% filter(tconst=="tt8783930")
 
 # Identify writers of a movie
 head(crew)
